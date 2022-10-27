@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TypePersons {
+  Comuns
+  Shopkeepers
+}
+
+model Persons {
+  id String @id @default(uuid())
+
+  cpf_cnpj String      @unique
+  type     TypePersons
+
+  name     String
+  email    String @unique
+  password String
+
+  balance Int
+
+  created_at DateTime @default(now())
+
+  sender    Transactions[] @relation(name: "sender")
+  recipient Transactions[] @relation(name: "recipient")
+}
+
+enum TypeTransaction {
+  ComunsForComuns
+  ComunsForShopkeepers
+}
+
+model Transactions {
+  id String @id @default(uuid())
+
+  sender         Persons @relation(name: "sender", fields: [sender_cpf], references: [cpf_cnpj])
+  sender_cpf     String
+  current_sender Int
+
+  recipient         Persons @relation(name: "recipient", fields: [recipient_cpf], references: [cpf_cnpj])
+  recipient_cpf     String
+  current_recipient Int
+
+  type TypeTransaction
+
+  value Int
+
+  date DateTime @default(now())
+}
